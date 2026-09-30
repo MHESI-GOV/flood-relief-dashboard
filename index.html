@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ซ่อม สร้าง สู้ น้ำท่วม</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand"><span class="dot"></span> ศูนย์บริการ<br/>ซ่อม สร้าง สู้ น้ำท่วม</div>
+      <ul class="nav-list">
+        <li><button class="nav-link" data-route="summary"><span class="icon">&#9673;</span> ภาพรวม</button></li>
+        <li><button class="nav-link" data-route="location"><span class="icon">&#10148;</span> แผนที่จุดบริการ</button></li>
+        <li><button class="nav-link" data-route="detail"><span class="icon">&#9776;</span> รายละเอียดจุดบริการ</button></li>
+      </ul>
+      <div class="sidebar-footer">
+        ข้อมูลจาก Google Sheets แบบเรียลไทม์<br/>โหลดใหม่ทุกครั้งที่เปิดหน้านี้
+      </div>
+    </aside>
+
+    <div class="main-col">
+      <header class="topbar">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button class="sidebar-toggle" id="sidebarToggle" aria-label="เปิดเมนู">&#9776;</button>
+          <div>
+            <div class="topbar-title" id="pageTitle">ภาพรวม</div>
+            <div class="topbar-sub" id="pageSub">สรุปจุดบริการทั้งหมดที่ผ่านเงื่อนไขของระบบ</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <label class="bkk-toggle" id="bkkToggleWrap">
+            <input type="checkbox" id="bkkToggle" />
+            <span class="switch"></span>
+            <span class="bkk-toggle-label">เฉพาะ กทม. และปริมณฑล</span>
+          </label>
+          <span class="status-pill loading" id="statusPill"><span class="dot"></span><span id="statusText">กำลังโหลดข้อมูล...</span></span>
+          <button class="btn-refresh" id="btnRefresh">&#8635; รีเฟรชข้อมูล</button>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <div id="errorBanner"></div>
+
+        <section class="page" id="page-summary"></section>
+        <section class="page" id="page-location"></section>
+        <section class="page" id="page-detail"></section>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <script src="config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/summary.js"></script>
+  <script src="js/location.js"></script>
+  <script src="js/detail.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
