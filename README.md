@@ -1,9 +1,13 @@
 # จุดบริการ Interactive Dashboard — Progress / Architecture Notes
 
-**Live:** https://nutthaphonlahm-spec.github.io/flood-relief-dashboard/ (GitHub Pages, deployed
-2026-10-01 from repo `nutthaphonlahm-spec/flood-relief-dashboard`, branch `main`, verified loading
-real Sheet data). To publish further local changes: `git add -A && git commit -m "..." && git push`
-from this folder — Pages redeploys automatically on every push to `main`.
+**Live:** https://mhesi-gov.github.io/flood-relief-dashboard/ (GitHub Pages, deployed 2026-10-01
+from repo `MHESI-GOV/flood-relief-dashboard`, branch `main`, verified loading real Sheet data).
+Originally created under the personal account `nutthaphonlahm-spec`, then transferred to the
+`MHESI-GOV` organization same day so the URL carries the project's name instead of a personal
+username — local `origin` remote was updated to match (`git remote set-url origin
+https://github.com/MHESI-GOV/flood-relief-dashboard.git`). To publish further local changes:
+`git add -A && git commit -m "..." && git push` from this folder — Pages redeploys automatically
+on every push to `main`.
 
 Status as of 2026-10-01 ~04:17: **All 3 pages built and working**, tested live in a browser
 against the real Google Sheet (98 eligible service points, 9/9 categories present, 30 provinces).
