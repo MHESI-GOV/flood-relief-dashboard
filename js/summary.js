@@ -131,7 +131,12 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "right", labels: { boxWidth: 12, font: { size: 11 } } } },
+        plugins: {
+          legend: {
+            position: window.innerWidth < 640 ? "bottom" : "right",
+            labels: { boxWidth: 12, font: { size: 11 } },
+          },
+        },
       },
     });
 
