@@ -86,6 +86,11 @@
     location.hash = "#location";
     renderRoute();
   };
+  window.App.goToLocationWithPoint = function (recordId) {
+    pendingLocationFilter = { recordId };
+    location.hash = "#location";
+    renderRoute();
+  };
   window.App.goTo = function (route) {
     location.hash = "#" + route;
   };

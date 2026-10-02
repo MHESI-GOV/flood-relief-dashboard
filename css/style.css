@@ -257,6 +257,11 @@ table.data-table th.fit-col, table.data-table td.fit-col { width: 1%; white-spac
 table.data-table tbody tr { cursor: pointer; }
 table.data-table tbody tr:hover { background: var(--purple-50); }
 .badge-yes { color: var(--green-600); font-weight: 700; }
+.btn-pin {
+  border: 1px solid var(--gray-300); background: var(--white); border-radius: 8px;
+  width: 30px; height: 30px; cursor: pointer; font-size: 14px; line-height: 1;
+}
+.btn-pin:hover { background: var(--purple-50); border-color: var(--purple-500); }
 .cat-tag {
   display: inline-block; font-size: 11px; background: var(--gray-100); color: var(--gray-700);
   border-radius: 999px; padding: 2px 7px; margin: 1px 2px 0 0;

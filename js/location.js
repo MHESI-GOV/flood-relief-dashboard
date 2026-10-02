@@ -8,6 +8,7 @@
   let state = { categories: new Set(), province: "", district: "" };
   let container = null;
   let mapDiv = null; // persistent element — Leaflet is bound to this node, never recreate it
+  let markersById = new Map();
 
   function fieldRow(label, value) {
     if (!value) return "";
@@ -56,6 +57,7 @@
   function updateMarkers() {
     const filtered = applyFilters();
     clusterGroup.clearLayers();
+    markersById = new Map();
     let withCoords = 0;
     for (const rec of filtered) {
       if (rec.lat === null || rec.lng === null) continue;
@@ -63,6 +65,7 @@
       const marker = L.marker([rec.lat, rec.lng]);
       marker.bindPopup(popupHtml(rec, dataset.categories));
       clusterGroup.addLayer(marker);
+      markersById.set(rec.id, marker);
     }
     const countEl = container.querySelector("#locResultCount");
     if (countEl) {
@@ -99,6 +102,12 @@
 
     if (pendingFilter && pendingFilter.categoryKey) {
       state.categories = new Set([pendingFilter.categoryKey]);
+    }
+    if (pendingFilter && pendingFilter.recordId) {
+      // Jumping to one specific point — clear filters so it's guaranteed to be visible.
+      state.categories = new Set();
+      state.province = "";
+      state.district = "";
     }
 
     const provinces = [...new Set(baseRecords.map((r) => r.province).filter(Boolean))].sort((a, b) =>
@@ -152,7 +161,16 @@
 
     ensureMap();
     // Leaflet needs a size recalculation whenever its container was reattached/hidden.
-    setTimeout(() => map.invalidateSize(), 50);
+    setTimeout(() => {
+      map.invalidateSize();
+      if (pendingFilter && pendingFilter.recordId) {
+        const marker = markersById.get(pendingFilter.recordId);
+        if (marker) {
+          map.setView(marker.getLatLng(), 15);
+          marker.openPopup();
+        }
+      }
+    }, 50);
 
     container.querySelector("#filterCategory").addEventListener("change", (e) => {
       if (e.target.matches('input[type="checkbox"]')) {

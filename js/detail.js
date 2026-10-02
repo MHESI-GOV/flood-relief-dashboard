@@ -9,6 +9,7 @@
     { key: "categories", label: "ประเภทการให้บริการ", sortable: false },
     { key: "phone", label: "เบอร์ติดต่อ", fit: true },
     { key: "affiliation", label: "สังกัด", fit: true },
+    { key: "pin", label: "แผนที่", sortable: false, fit: true },
   ];
 
   let dataset = null;
@@ -91,6 +92,13 @@
         <td>${catTags(r)}</td>
         <td class="fit-col">${window.App.escapeHtml(r.phone) || "-"}</td>
         <td class="fit-col">${window.App.escapeHtml(r.affiliation) || "-"}</td>
+        <td class="fit-col">
+          ${
+            r.lat !== null
+              ? `<button type="button" class="btn-pin" data-id="${r.id}" title="ดูตำแหน่งบนแผนที่">&#128205;</button>`
+              : ""
+          }
+        </td>
       </tr>`
       )
       .join("");
@@ -116,6 +124,12 @@
       tr.addEventListener("click", () => {
         const rec = baseRecords.find((r) => r.id === tr.dataset.id);
         if (rec) window.App.openModal(modalHtml(rec));
+      });
+    });
+    tableArea.querySelectorAll(".btn-pin").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        window.App.goToLocationWithPoint(btn.dataset.id);
       });
     });
 
