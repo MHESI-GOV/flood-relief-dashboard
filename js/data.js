@@ -95,10 +95,14 @@
       const url =
         "https://docs.google.com/spreadsheets/d/" +
         encodeURIComponent(sheetId) +
-        "/gviz/tq?tqx=out:json&gid=" +
+        "/gviz/tq?tqx=out:json&headers=1&gid=" +
         encodeURIComponent(gid) +
         "&_=" +
         Date.now(); // cache-bust so a changed sheet is picked up on reload
+      // headers=1 pins Google's auto header-row detection so table.rows never
+      // contains the header row — without it, Google's heuristic can flip (it did
+      // when columns R/S/T + blank U-Y were added) and silently feed a real data
+      // row into resolveColumns() as if it were headers.
 
       const script = document.createElement("script");
       script.src = url;
@@ -200,8 +204,10 @@
     if (!dataRows || dataRows.length === 0) {
       throw new Error("ไม่พบข้อมูลใน Google Sheets");
     }
-    const headerRow = dataRows[0];
-    const headers = headerRow.c.map((c) => (c ? c.v : ""));
+    // Headers come from gviz's own column metadata (table.cols), not from
+    // dataRows[0] — with headers=1 pinned above, table.rows is pure data,
+    // the header row is never in there.
+    const headers = table.cols.map((c) => (c && c.label) || "");
     const colMap = resolveColumns(headers);
 
     const missingRequired = ["province", "name"].filter((f) => colMap[f] < 0);
@@ -211,13 +217,13 @@
       );
     }
 
-    const totalRaw = dataRows.length - 1;
+    const totalRaw = dataRows.length;
     const seen = new Set();
     let duplicateCount = 0;
     let noServiceCount = 0;
     const records = [];
 
-    for (let i = 1; i < dataRows.length; i++) {
+    for (let i = 0; i < dataRows.length; i++) {
       const raw = dataRows[i];
       if (!raw || !raw.c) continue;
       const sig = rowSignature(raw);
@@ -227,7 +233,7 @@
       }
       seen.add(sig);
 
-      const rec = buildRecord(raw, colMap, i + 1); // +1 => sheet row number (header = row1)
+      const rec = buildRecord(raw, colMap, i + 2); // +2 => sheet row number (header = row1, dataRows[0] = row2)
       if (!rec.name) continue; // completely blank row
 
       const hasAnyService = STANDARD_CATEGORIES.some((c) => rec.categories[c.key]);

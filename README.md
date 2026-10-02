@@ -86,6 +86,18 @@ pick up the fix automatically on next load (no code changes needed).
    the Sheet fresh (a short in-memory cache avoids re-fetching when switching tabs within one session) —
    this satisfies "when the Sheet changes, the dashboard updates" (reload the page = fresh data; no
    polling/websocket, which the spec doesn't require).
+   - **Gotcha hit 2026-10-02:** the gviz endpoint decides on its own, per request, whether the
+     sheet "has a header row" — when it decides yes, the header row's text moves into
+     `table.cols[].label` and is stripped out of `table.rows`; when it decides no, the header text
+     stays as `table.rows[0]`. `data.js` originally assumed the latter (read headers from
+     `dataRows[0]`). That broke — apparently once the R/S/T columns (R typed as `datetime`) plus
+     blank-header U-Y columns were added, Google's heuristic flipped to "yes, has headers" — and
+     the app started feeding a real data row into `resolveColumns()`, which couldn't find
+     "จังหวัด"/"หน่วยบริการ" inside data values and threw "ไม่พบคอลัมน์ที่จำเป็นในชีต: province, name".
+     Fixed by pinning `&headers=1` on the request URL (forces the stripped-out behavior
+     consistently) and reading headers from `table.cols[].label` instead of `dataRows[0]` — see
+     `js/data.js`'s `load()`. If this breaks again, check this first before assuming the sheet's
+     columns moved.
 3. **Google Maps substitution → Leaflet + OpenStreetMap.** The spec asks for Google Maps JS API with
    an env-var key. A build-less static app has no real "environment variable" mechanism, and I have
    no Google Maps API key from the user. Default: **Leaflet + OpenStreetMap tiles** (free, no key,
