@@ -14,11 +14,13 @@
   let dataset = null;
   let baseRecords = []; // dataset.records after the global กทม./ปริมณฑล toggle is applied
   let container = null;
-  let state = { search: "", province: "", categories: new Set(), sortKey: "name", sortDir: "asc", page: 1, pageSize: 25 };
+  let state = { search: "", province: "", affiliation: "", categories: new Set(), sortKey: "name", sortDir: "asc", page: 1, pageSize: 25 };
   let searchDebounce = null;
+  let categoryOutsideClickHandler = null;
 
   function matches(rec) {
     if (state.province && rec.province !== state.province) return false;
+    if (state.affiliation && rec.affiliation !== state.affiliation) return false;
     if (state.categories.size > 0) {
       const has = [...state.categories].some((k) => rec.categories[k]);
       if (!has) return false;
@@ -140,6 +142,8 @@
     baseRecords = window.App.filterRecords(dataset.records);
     const provinces = [...new Set(baseRecords.map((r) => r.province).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
     if (state.province && !provinces.includes(state.province)) state.province = "";
+    const affiliations = [...new Set(baseRecords.map((r) => r.affiliation).filter(Boolean))].sort((a, b) => a.localeCompare(b, "th"));
+    if (state.affiliation && !affiliations.includes(state.affiliation)) state.affiliation = "";
 
     container.innerHTML = `
       <div class="filter-bar">
@@ -154,18 +158,31 @@
             ${provinces.map((p) => `<option value="${window.App.escapeHtml(p)}">${window.App.escapeHtml(p)}</option>`).join("")}
           </select>
         </div>
+        <div class="filter-field">
+          <label>สังกัด</label>
+          <select id="filterAffiliationD">
+            <option value="">ทั้งหมด</option>
+            ${affiliations.map((a) => `<option value="${window.App.escapeHtml(a)}">${window.App.escapeHtml(a)}</option>`).join("")}
+          </select>
+        </div>
         <div class="filter-field grow">
           <label>ประเภทบริการ (เลือกได้หลายรายการ)</label>
-          <div class="checkbox-list" id="filterCategoryD">
-            ${dataset.categories
-              .map(
-                (c) => `
-              <div class="cb-item">
-                <input type="checkbox" id="det-cat-${c.key}" value="${c.key}" ${state.categories.has(c.key) ? "checked" : ""}/>
-                <label for="det-cat-${c.key}">${c.label}</label>
-              </div>`
-              )
-              .join("")}
+          <div class="dropdown-check" id="categoryDropdownD">
+            <button type="button" class="dropdown-check-btn" id="categoryDropdownBtnD">
+              <span id="categoryDropdownLabelD">ทั้งหมด</span>
+              <span class="dropdown-check-arrow">&#9662;</span>
+            </button>
+            <div class="dropdown-check-panel checkbox-list" id="filterCategoryD">
+              ${dataset.categories
+                .map(
+                  (c) => `
+                <div class="cb-item">
+                  <input type="checkbox" id="det-cat-${c.key}" value="${c.key}" ${state.categories.has(c.key) ? "checked" : ""}/>
+                  <label for="det-cat-${c.key}">${c.label}</label>
+                </div>`
+                )
+                .join("")}
+            </div>
           </div>
         </div>
         <div class="filter-field">
@@ -206,12 +223,40 @@
       state.page = 1;
       renderTable();
     });
+    container.querySelector("#filterAffiliationD").value = state.affiliation;
+    container.querySelector("#filterAffiliationD").addEventListener("change", (e) => {
+      state.affiliation = e.target.value;
+      state.page = 1;
+      renderTable();
+    });
+
+    const catDropdown = container.querySelector("#categoryDropdownD");
+    const catDropdownBtn = container.querySelector("#categoryDropdownBtnD");
+    const catDropdownLabel = container.querySelector("#categoryDropdownLabelD");
+
+    function updateCategoryDropdownLabel() {
+      catDropdownLabel.textContent = state.categories.size === 0 ? "ทั้งหมด" : `เลือกแล้ว ${state.categories.size} ประเภท`;
+    }
+    updateCategoryDropdownLabel();
+
+    catDropdownBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      catDropdown.classList.toggle("open");
+    });
+
+    if (categoryOutsideClickHandler) document.removeEventListener("click", categoryOutsideClickHandler, true);
+    categoryOutsideClickHandler = (e) => {
+      if (!catDropdown.contains(e.target)) catDropdown.classList.remove("open");
+    };
+    document.addEventListener("click", categoryOutsideClickHandler, true);
+
     container.querySelector("#filterCategoryD").addEventListener("change", (e) => {
       if (e.target.matches('input[type="checkbox"]')) {
         state.categories = new Set(
           [...container.querySelectorAll('#filterCategoryD input[type="checkbox"]:checked')].map((cb) => cb.value)
         );
         state.page = 1;
+        updateCategoryDropdownLabel();
         renderTable();
       }
     });
@@ -223,11 +268,15 @@
     container.querySelector("#btnClearFiltersD").addEventListener("click", () => {
       state.search = "";
       state.province = "";
+      state.affiliation = "";
       state.categories = new Set();
       state.page = 1;
       container.querySelector("#searchBox").value = "";
       container.querySelector("#filterProvinceD").value = "";
+      container.querySelector("#filterAffiliationD").value = "";
       container.querySelectorAll('#filterCategoryD input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+      updateCategoryDropdownLabel();
+      catDropdown.classList.remove("open");
       renderTable();
     });
 

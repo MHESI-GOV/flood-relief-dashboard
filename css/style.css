@@ -153,6 +153,22 @@ body {
 .checkbox-list .cb-item input { accent-color: var(--purple-600); width: 14px; height: 14px; flex: none; }
 .checkbox-list .cb-item label { cursor: pointer; }
 
+/* ---------- Dropdown-style multi-check (category filter) ---------- */
+.dropdown-check { position: relative; }
+.dropdown-check-btn {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border: 1px solid var(--gray-300); border-radius: 9px; padding: 8px 10px; font-size: 13px;
+  background: var(--white); font-family: inherit; color: var(--gray-900); cursor: pointer;
+}
+.dropdown-check-btn:hover { background: var(--gray-50); }
+.dropdown-check-arrow { font-size: 10px; color: var(--gray-500); flex: none; }
+.dropdown-check-panel {
+  display: none;
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; min-width: 220px;
+  z-index: 25; box-shadow: var(--shadow);
+}
+.dropdown-check.open .dropdown-check-panel { display: block; }
+
 .page-content { padding: 22px 24px 60px; }
 .page { display: none; }
 .page.active { display: block; }
