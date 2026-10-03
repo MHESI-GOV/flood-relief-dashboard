@@ -5,10 +5,11 @@
   let clusterGroup = null;
   let dataset = null;
   let baseRecords = []; // dataset.records after the global กทม./ปริมณฑล toggle is applied
-  let state = { categories: new Set(), province: "", district: "" };
+  let state = { categories: new Set(), province: "", district: "", affiliation: "" };
   let container = null;
   let mapDiv = null; // persistent element — Leaflet is bound to this node, never recreate it
   let markersById = new Map();
+  let categoryOutsideClickHandler = null;
 
   function fieldRow(label, value) {
     if (!value) return "";
@@ -50,6 +51,7 @@
       }
       if (state.province && r.province !== state.province) return false;
       if (state.district && r.district !== state.district) return false;
+      if (state.affiliation && r.affiliation !== state.affiliation) return false;
       return true;
     });
   }
@@ -115,20 +117,31 @@
     );
     if (state.province && !provinces.includes(state.province)) state.province = "";
 
+    const affiliations = [...new Set(baseRecords.map((r) => r.affiliation).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "th")
+    );
+    if (state.affiliation && !affiliations.includes(state.affiliation)) state.affiliation = "";
+
     container.innerHTML = `
       <div class="filter-bar">
         <div class="filter-field grow">
           <label>ประเภทบริการ (เลือกได้หลายรายการ)</label>
-          <div class="checkbox-list" id="filterCategory">
-            ${dataset.categories
-              .map(
-                (c) => `
-              <div class="cb-item">
-                <input type="checkbox" id="loc-cat-${c.key}" value="${c.key}" ${state.categories.has(c.key) ? "checked" : ""}/>
-                <label for="loc-cat-${c.key}">${c.label}</label>
-              </div>`
-              )
-              .join("")}
+          <div class="dropdown-check" id="categoryDropdown">
+            <button type="button" class="dropdown-check-btn" id="categoryDropdownBtn">
+              <span id="categoryDropdownLabel">ทั้งหมด</span>
+              <span class="dropdown-check-arrow">&#9662;</span>
+            </button>
+            <div class="dropdown-check-panel checkbox-list" id="filterCategory">
+              ${dataset.categories
+                .map(
+                  (c) => `
+                <div class="cb-item">
+                  <input type="checkbox" id="loc-cat-${c.key}" value="${c.key}" ${state.categories.has(c.key) ? "checked" : ""}/>
+                  <label for="loc-cat-${c.key}">${c.label}</label>
+                </div>`
+                )
+                .join("")}
+            </div>
           </div>
         </div>
         <div class="filter-field">
@@ -145,6 +158,13 @@
         <div class="filter-field">
           <label>ตำบล</label>
           <select id="filterSubdistrict" disabled><option>ไม่มีข้อมูลตำบลในชุดข้อมูล</option></select>
+        </div>
+        <div class="filter-field">
+          <label>สังกัด</label>
+          <select id="filterAffiliation">
+            <option value="">ทั้งหมด</option>
+            ${affiliations.map((a) => `<option value="${window.App.escapeHtml(a)}">${window.App.escapeHtml(a)}</option>`).join("")}
+          </select>
         </div>
         <button class="btn-clear" id="btnClearFilters">ล้างตัวกรอง</button>
         <div class="filter-count" id="locResultCount"></div>
@@ -172,11 +192,32 @@
       }
     }, 50);
 
+    const catDropdown = container.querySelector("#categoryDropdown");
+    const catDropdownBtn = container.querySelector("#categoryDropdownBtn");
+    const catDropdownLabel = container.querySelector("#categoryDropdownLabel");
+
+    function updateCategoryDropdownLabel() {
+      catDropdownLabel.textContent = state.categories.size === 0 ? "ทั้งหมด" : `เลือกแล้ว ${state.categories.size} ประเภท`;
+    }
+    updateCategoryDropdownLabel();
+
+    catDropdownBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      catDropdown.classList.toggle("open");
+    });
+
+    if (categoryOutsideClickHandler) document.removeEventListener("click", categoryOutsideClickHandler, true);
+    categoryOutsideClickHandler = (e) => {
+      if (!catDropdown.contains(e.target)) catDropdown.classList.remove("open");
+    };
+    document.addEventListener("click", categoryOutsideClickHandler, true);
+
     container.querySelector("#filterCategory").addEventListener("change", (e) => {
       if (e.target.matches('input[type="checkbox"]')) {
         state.categories = new Set(
           [...container.querySelectorAll('#filterCategory input[type="checkbox"]:checked')].map((cb) => cb.value)
         );
+        updateCategoryDropdownLabel();
         updateMarkers();
       }
     });
@@ -196,10 +237,20 @@
       updateMarkers();
     });
 
+    const affilSel = container.querySelector("#filterAffiliation");
+    affilSel.value = state.affiliation;
+    affilSel.addEventListener("change", () => {
+      state.affiliation = affilSel.value;
+      updateMarkers();
+    });
+
     container.querySelector("#btnClearFilters").addEventListener("click", () => {
-      state = { categories: new Set(), province: "", district: "" };
+      state = { categories: new Set(), province: "", district: "", affiliation: "" };
       container.querySelectorAll('#filterCategory input[type="checkbox"]').forEach((cb) => (cb.checked = false));
+      updateCategoryDropdownLabel();
+      catDropdown.classList.remove("open");
       provSel.value = "";
+      affilSel.value = "";
       rebuildDistrictOptions();
       updateMarkers();
     });
