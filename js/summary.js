@@ -3,6 +3,10 @@
 
   const PALETTE = ["#6d28d9", "#8b5cf6", "#a78bfa", "#c4b5fd", "#4c1d95", "#9333ea", "#7e22ce", "#5b21b6", "#ddd6fe"];
 
+  if (window.Chart && window.ChartDataLabels && !window.Chart.registry.plugins.get("datalabels")) {
+    window.Chart.register(window.ChartDataLabels);
+  }
+
   let charts = {}; // keep refs so we can destroy before re-render
 
   function destroyCharts() {
@@ -107,7 +111,17 @@
         indexAxis: "y",
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        layout: { padding: { right: 28 } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: "end",
+            align: "end",
+            color: "#3f3f46",
+            font: { weight: "600", size: 12 },
+            formatter: (v) => v.toLocaleString("th-TH"),
+          },
+        },
         scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
         onClick: (evt, elements) => {
           if (!elements.length) return;
@@ -136,6 +150,11 @@
             position: window.innerWidth < 640 ? "bottom" : "right",
             labels: { boxWidth: 12, font: { size: 11 } },
           },
+          datalabels: {
+            color: "#fff",
+            font: { weight: "700", size: 13 },
+            formatter: (v) => v.toLocaleString("th-TH"),
+          },
         },
       },
     });
@@ -153,7 +172,17 @@
         indexAxis: "y",
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        layout: { padding: { right: 28 } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: "end",
+            align: "end",
+            color: "#3f3f46",
+            font: { weight: "600", size: 12 },
+            formatter: (v) => v.toLocaleString("th-TH"),
+          },
+        },
         scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
       },
     });

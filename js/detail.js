@@ -5,7 +5,7 @@
     { key: "name", label: "ชื่อจุดบริการ" },
     { key: "province", label: "จังหวัด" },
     { key: "district", label: "อำเภอ/เขต" },
-    { key: "subdistrict", label: "ตำบล" },
+    { key: "coordinator", label: "ผู้ประสานงาน" },
     { key: "categories", label: "ประเภทการให้บริการ", sortable: false },
     { key: "phone", label: "เบอร์ติดต่อ", fit: true },
     { key: "affiliation", label: "สังกัด", fit: true },
@@ -88,7 +88,7 @@
         <td>${window.App.escapeHtml(r.name)}</td>
         <td>${window.App.escapeHtml(r.province)}</td>
         <td>${window.App.escapeHtml(r.district) || "-"}</td>
-        <td>${window.App.escapeHtml(r.subdistrict) || "-"}</td>
+        <td>${window.App.escapeHtml(r.coordinator) || "-"}</td>
         <td>${catTags(r)}</td>
         <td class="fit-col">${window.App.escapeHtml(r.phone) || "-"}</td>
         <td class="fit-col">${window.App.escapeHtml(r.affiliation) || "-"}</td>
@@ -210,10 +210,6 @@
         </div>
         <button class="btn-clear" id="btnClearFiltersD">ล้างตัวกรอง</button>
       </div>
-
-      <p style="font-size:11.5px;color:var(--gray-500);margin:-4px 0 10px;">
-        * ชุดข้อมูลนี้ไม่มีคอลัมน์ตำบลจากต้นทาง คอลัมน์ "ตำบล" จึงแสดง "-" ทุกแถว
-      </p>
 
       <div class="table-toolbar">
         <div id="resultSummary" style="font-size:13px;color:var(--gray-500);"></div>
